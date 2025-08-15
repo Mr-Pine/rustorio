@@ -4,7 +4,7 @@
 use std::{
     fmt::Display,
     marker::{ConstParamTy, PhantomData},
-    ops::AddAssign,
+    ops::{Add, AddAssign},
 };
 
 #[derive(ConstParamTy, Debug, Clone, Copy, PartialEq, Eq)]
@@ -94,6 +94,21 @@ impl<const RESOURCE_TYPE: ResourceType> PartialEq<Resource<RESOURCE_TYPE>> for u
     }
 }
 
+impl<const RESOURCE_TYPE: ResourceType> AddAssign for Resource<RESOURCE_TYPE> {
+    fn add_assign(&mut self, rhs: Self) {
+        self.amount += rhs.amount
+    }
+}
+
+impl<const RESOURCE_TYPE: ResourceType> Add for Resource<RESOURCE_TYPE> {
+    type Output = Self;
+
+    fn add(mut self, rhs: Self) -> Self::Output {
+        self += rhs;
+        self
+    }
+}
+
 /// Contains a fixed (compile-time known) amount of a resource.
 /// A [`Bundle`](Bundle) can be used to build structures or as input for recipes.
 pub struct Bundle<const RESOURCE_TYPE: ResourceType, const AMOUNT: u32> {
@@ -124,5 +139,39 @@ impl<const RESOURCE_TYPE: ResourceType, const AMOUNT: u32> AddAssign<Bundle<RESO
 {
     fn add_assign(&mut self, _bundle: Bundle<RESOURCE_TYPE, AMOUNT>) {
         self.amount += AMOUNT;
+    }
+}
+
+impl<const RESOURCE_TYPE: ResourceType, const AMOUNT: u32> Add<Bundle<RESOURCE_TYPE, AMOUNT>>
+    for Resource<RESOURCE_TYPE>
+{
+    type Output = Self;
+
+    fn add(mut self, rhs: Bundle<RESOURCE_TYPE, AMOUNT>) -> Self::Output {
+        self += rhs;
+        self
+    }
+}
+
+impl<const RESOURCE_TYPE: ResourceType, const AMOUNT: u32> Add<Resource<RESOURCE_TYPE>>
+    for Bundle<RESOURCE_TYPE, AMOUNT>
+{
+    type Output = Resource<RESOURCE_TYPE>;
+
+    fn add(self, mut rhs: Resource<RESOURCE_TYPE>) -> Self::Output {
+        rhs += self;
+        rhs
+    }
+}
+
+impl<const RESOURCE_TYPE: ResourceType, const AMOUNT_LHS: u32, const AMOUNT_RHS: u32>
+    Add<Bundle<RESOURCE_TYPE, AMOUNT_RHS>> for Bundle<RESOURCE_TYPE, AMOUNT_LHS>
+{
+    type Output = Resource<RESOURCE_TYPE>;
+
+    fn add(self, _rhs: Bundle<RESOURCE_TYPE, AMOUNT_RHS>) -> Self::Output {
+        Resource {
+            amount: AMOUNT_LHS + AMOUNT_RHS,
+        }
     }
 }

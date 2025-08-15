@@ -82,31 +82,48 @@ impl<R: AssemblerRecipe> Assembler<R> {
         }
     }
 
+    /// How much of input resource 1 is currently in the assembler.
     pub fn cur_input1(&mut self, tick: &Tick) -> u32 {
         self.tick(tick);
         self.input1_amount
     }
 
+    /// How much of input resource 2 is currently in the assembler.
     pub fn cur_input2(&mut self, tick: &Tick) -> u32 {
         self.tick(tick);
         self.input2_amount
     }
 
+    /// How much of the output resource is currently in the assembler.
     pub fn cur_output(&mut self, tick: &Tick) -> u32 {
         self.tick(tick);
         self.output_amount
     }
 
+    /// Add some of input resource 1.
     pub fn add_input1<const AMOUNT: u32>(&mut self, tick: &Tick, _ore: Bundle<{ R::INPUT1 }, AMOUNT>) {
         self.tick(tick);
         self.input1_amount += AMOUNT;
     }
 
+    /// Add some of input resource 2.
     pub fn add_input2<const AMOUNT: u32>(&mut self, tick: &Tick, _ore: Bundle<{ R::INPUT2 }, AMOUNT>) {
         self.tick(tick);
         self.input2_amount += AMOUNT;
     }
 
+    /// Take some of input resource 1.
+    pub fn take_input1<const AMOUNT: u32>(&mut self, tick: &Tick) -> Option<Bundle<{ R::INPUT1 }, AMOUNT>> {
+        self.tick(tick);
+        if self.input1_amount >= AMOUNT {
+            self.input1_amount -= AMOUNT;
+            Some(Bundle::new())
+        } else {
+            None
+        }
+    }
+
+    /// Take all of input resource 1 currently in the assembler.
     pub fn empty_input1(&mut self, tick: &Tick) -> Resource<{ R::INPUT1 }> {
         self.tick(tick);
         let amount = self.input1_amount;
@@ -114,6 +131,18 @@ impl<R: AssemblerRecipe> Assembler<R> {
         Resource { amount }
     }
 
+    /// Take some of input resource 2.
+    pub fn take_input2<const AMOUNT: u32>(&mut self, tick: &Tick) -> Option<Bundle<{ R::INPUT2 }, AMOUNT>> {
+        self.tick(tick);
+        if self.input2_amount >= AMOUNT {
+            self.input2_amount -= AMOUNT;
+            Some(Bundle::new())
+        } else {
+            None
+        }
+    }
+
+    /// Take all of input resource 2 currently in the assembler.
     pub fn empty_input2(&mut self, tick: &Tick) -> Resource<{ R::INPUT2 }> {
         self.tick(tick);
         let amount = self.input2_amount;
@@ -121,6 +150,7 @@ impl<R: AssemblerRecipe> Assembler<R> {
         Resource { amount }
     }
 
+    /// Take some of the output resource.
     pub fn take_output<const AMOUNT: u32>(&mut self, tick: &Tick) -> Option<Bundle<{ R::OUTPUT }, AMOUNT>> {
         self.tick(tick);
         if self.output_amount >= AMOUNT {
@@ -129,6 +159,14 @@ impl<R: AssemblerRecipe> Assembler<R> {
         } else {
             None
         }
+    }
+
+    /// Take all of the output resource currently in the assembler.
+    pub fn empty_output(&mut self, tick: &Tick) -> Resource<{ R::OUTPUT }> {
+        self.tick(tick);
+        let amount = self.output_amount;
+        self.output_amount = 0;
+        Resource { amount }
     }
 }
 
@@ -205,6 +243,16 @@ impl<R: FurnaceRecipe> Furnace<R> {
         self.input_amount += AMOUNT;
     }
 
+    pub fn take_input<const AMOUNT: u32>(&mut self, tick: &Tick) -> Option<Bundle<{ R::INPUT }, AMOUNT>> {
+        self.tick(tick);
+        if self.input_amount >= AMOUNT {
+            self.input_amount -= AMOUNT;
+            Some(Bundle::new())
+        } else {
+            None
+        }
+    }
+
     pub fn empty_input(&mut self, tick: &Tick) -> Resource<{ R::INPUT }> {
         self.tick(tick);
         let amount = self.input_amount;
@@ -220,5 +268,12 @@ impl<R: FurnaceRecipe> Furnace<R> {
         } else {
             None
         }
+    }
+
+    pub fn empty_output(&mut self, tick: &Tick) -> Resource<{ R::OUTPUT }> {
+        self.tick(tick);
+        let amount = self.output_amount;
+        self.output_amount = 0;
+        Resource { amount }
     }
 }

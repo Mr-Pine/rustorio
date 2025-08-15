@@ -1,19 +1,32 @@
 use revolution::{
-    Bundle, Resource, ResourceType, Tick,
-    buildings::{Assembler, Furnace},
-    recipes::{CopperSmelting, IronSmelting, PointRecipe},
+    self, Bundle, Resource, ResourceType, Tick,
+    buildings::Furnace,
+    gamemodes::{self},
+    recipes::CopperSmelting,
 };
 
+type GameMode = gamemodes::Tutorial;
+
+type StartingResources = <GameMode as gamemodes::GameMode>::StartingResources;
+
 fn main() {
-    revolution::play(user_main);
+    revolution::play::<GameMode>(user_main);
 }
 
-fn user_main(mut tick: Tick, iron: Bundle<{ ResourceType::Iron }, 10>) -> (Tick, Bundle<{ ResourceType::Point }, 10>) {
-    let mut iron = iron.to_resource();
+fn user_main(mut tick: Tick, starting_resources: StartingResources) -> (Tick, Bundle<{ ResourceType::Copper }, 1>) {
+    let StartingResources { iron } = starting_resources;
 
-    let mut points = Resource::<{ ResourceType::Point }>::empty();
-    let win_bundle = points
-        .bundle::<10>()
-        .expect("This will always fail because you have no points yet.");
+    let mut furnace = Furnace::<CopperSmelting>::build(&tick, iron);
+
+    let mut copper_ore = Resource::empty();
+
+    copper_ore += revolution::mine_copper::<2>(&mut tick);
+
+    furnace.add_input(&tick, copper_ore.bundle::<2>().unwrap());
+    while furnace.cur_output(&tick) < 1 {
+        tick.next();
+    }
+
+    let win_bundle = furnace.take_output(&tick).unwrap();
     (tick, win_bundle)
 }

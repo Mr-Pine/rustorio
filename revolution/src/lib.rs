@@ -3,6 +3,7 @@
 #![allow(incomplete_features)] // silence the “still incomplete” lint
 
 pub mod buildings;
+pub mod gamemodes;
 pub mod recipes;
 mod resources;
 mod tick;
@@ -12,33 +13,38 @@ use std::sync::Once;
 pub use resources::{Bundle, Resource, ResourceType};
 pub use tick::Tick;
 
+use crate::gamemodes::{GameMode, StartingResources};
+
 static ONCE: Once = Once::new();
 
 /// Runs your play. If it is run multiple times, it will panic. This is to prevent using multiple threads to cheat.
-pub fn play(main: fn(Tick, Bundle<{ ResourceType::Iron }, 10>) -> (Tick, Bundle<{ ResourceType::Point }, 10>)) -> ! {
+pub fn play<G: GameMode>(main: fn(Tick, G::StartingResources) -> (Tick, G::VictoryResources)) -> ! {
     if ONCE.is_completed() {
         panic!("revolution::play() can only be called once per program run.");
     }
     ONCE.call_once(|| {});
     let tick = Tick::start();
-    let iron = Bundle::<{ ResourceType::Iron }, 10>::new();
-    let (tick, _points) = main(tick, iron);
-    println!("The revolution succeeded or something!");
-    println!("You won in {tick} ticks!");
+    let start_resources = G::StartingResources::init();
+    let (tick, _points) = main(tick, start_resources);
+    println!("You won in {} ticks!", tick.cur());
     std::process::exit(0);
 }
 
+pub type IronOreBundle<const AMOUNT: u32> = Bundle<{ ResourceType::IronOre }, AMOUNT>;
+
 /// Mines iron ore. Takes 2 ticks to mine 1 ore.
-pub fn mine_iron(tick: &mut Tick) -> Bundle<{ ResourceType::IronOre }, 1> {
-    for _ in 0..2 {
+pub fn mine_iron<const AMOUNT: u32>(tick: &mut Tick) -> IronOreBundle<AMOUNT> {
+    for _ in 0..(2 * AMOUNT) {
         tick.next();
     }
     Bundle::new()
 }
 
+pub type CopperOreBundle<const AMOUNT: u32> = Bundle<{ ResourceType::CopperOre }, AMOUNT>;
+
 /// Mines copper ore. Takes 2 ticks to mine 1 ore.
-pub fn mine_copper(tick: &mut Tick) -> Bundle<{ ResourceType::CopperOre }, 1> {
-    for _ in 0..2 {
+pub fn mine_copper<const AMOUNT: u32>(tick: &mut Tick) -> CopperOreBundle<AMOUNT> {
+    for _ in 0..(2 * AMOUNT) {
         tick.next();
     }
     Bundle::new()

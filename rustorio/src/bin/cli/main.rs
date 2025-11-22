@@ -7,18 +7,14 @@ use dialoguer::Confirm;
 // Macro to build paths to game bin files relative to workspace root
 macro_rules! game_bin_file {
     ($gamemode:expr) => {
-        concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/../game/src/bin/",
-            $gamemode,
-            "_new_game.rs"
-        )
+        concat!(env!("CARGO_MANIFEST_DIR"), "/examples/", $gamemode, "_new_game.rs")
     };
 }
 
-const RUST_TOOLCHAIN: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../rust-toolchain"));
+const RUST_TOOLCHAIN: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/rust-toolchain"));
 
 #[derive(Parser)]
+#[command(version)]
 struct Cli {
     #[clap(subcommand)]
     command: Commands,
@@ -74,8 +70,6 @@ impl SetupArgs {
         let path = path.as_path();
         Command::new(env!("CARGO"))
             .arg("add")
-            .arg("--git")
-            .arg("https://github.com/albertsgarde/rustorio.git")
             .arg("rustorio")
             .current_dir(path)
             .status()
@@ -85,7 +79,7 @@ impl SetupArgs {
         let save_path = path.join("src").join("bin");
         fs::create_dir_all(&save_path).context("Failed to create save directory")?;
         if self.include_tutorial {
-            let tutorial_start_file = include_str!(game_bin_file!("tutorial"));
+            let tutorial_start_file = GameMode::Tutorial.start_file();
             let tutorial_save_dir = save_path.join("tutorial");
             fs::create_dir_all(&tutorial_save_dir).context("Failed to create tutorial save directory")?;
             fs::write(tutorial_save_dir.join("main.rs"), tutorial_start_file)

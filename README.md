@@ -1,18 +1,37 @@
 # Rustorio
-Aid the rustorio by taking ownership (in Rust) of resources and using them to build industry for the people!
+
+The first game written _and played_ entirely in Rust. Not just do you play by
+writing Rust code, the rules of the game are enforced by the Rust compiler! If
+you can write the program so it compiles and doesn't panic, you win!
 
 ## How to play
-1. Install [Rust](https://www.rust-lang.org/tools/install). Specifically it's important to have the entire rustup toolchain which you get automatically by following the instructions in the link. 
+
+1. Install [Rust](https://www.rust-lang.org/tools/install). Specifically it's
+   important to have the entire rustup toolchain which you get automatically by
+   following the instructions in the link.
 2. Clone this repo.
-3. A play of this game is a Rust executable where the main function does nothing but call `rustorio::play()`. This function takes a closure. Writing this closure is the gameplay. I would recommend starting by editing `game/src/main.rs`.
-    Some examples of play are in `rustorio/src/bin/`.
-4. Run with `cargo play`. This will compile and run your solution and tell you if you win or panic.
+3. A play of this game is a Rust executable where the main function does nothing
+   but call `rustorio::play()`. This function takes a closure. Writing this
+   closure is the gameplay. I would recommend starting by editing
+   `game/src/main.rs`. Some examples of play are in `rustorio/src/bin/`.
+4. Run with `cargo play`. This will compile and run your solution and tell you
+   if you win or panic.
 5. Winning is not difficult, the goal is to see how few ticks you need for it.
 
 ## Rules
-The only rule that is not enforced by the compiler is that you should use the library as it exists in the repo. By editing the library it is trivial to do arbitrarily well. I have deliberately not done anything to prevent this, as that could be seen as a challenge.
+
+The only rule that is not enforced by the compiler is that you should use the
+library as it exists in the repo. By editing the library it is trivial to do
+arbitrarily well. I have deliberately not done anything to prevent this, as that
+could be seen as a challenge.
 
 ## Help
-The manual is available [here](https://albertsgarde.github.io/rustorio).
-A good place to start is to build a [furnace](https://albertsgarde.github.io/rustorio/rustorio/buildings/struct.Furnace.html) and start [mining](https://albertsgarde.github.io/rustorio/rustorio/fn.mine_iron.html) and smelting iron.
-Alternatively, you can work backwards by looking at the [recipe](https://albertsgarde.github.io/rustorio/rustorio/recipes/struct.PointRecipe.html) for points to figure out how to get them.
+
+The manual is available [here](https://albertsgarde.github.io/rustorio). A good
+place to start is to build a
+[furnace](https://albertsgarde.github.io/rustorio/rustorio/buildings/struct.Furnace.html)
+and start
+[mining](https://albertsgarde.github.io/rustorio/rustorio/fn.mine_iron.html) and
+smelting iron. Alternatively, you can work backwards by looking at the
+[recipe](https://albertsgarde.github.io/rustorio/rustorio/recipes/struct.PointRecipe.html)
+for points to figure out how to get them.

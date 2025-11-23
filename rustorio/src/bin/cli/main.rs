@@ -1,8 +1,14 @@
-use std::{fs, path::Path, process::Command};
+use std::{
+    fmt::Display,
+    fs, io,
+    path::Path,
+    process::{Command, ExitStatus},
+};
 
 use anyhow::{Context, Result, bail};
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use dialoguer::Confirm;
+use thiserror::Error;
 
 // Macro to build paths to game bin files relative to workspace root
 macro_rules! game_bin_file {
@@ -12,6 +18,37 @@ macro_rules! game_bin_file {
 }
 
 const RUST_TOOLCHAIN: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/rust-toolchain"));
+
+#[derive(Error, Debug)]
+pub enum RunCommandError {
+    CommandFailed(ExitStatus),
+    IoError(io::Error),
+}
+
+impl Display for RunCommandError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RunCommandError::CommandFailed(status) => {
+                write!(f, "Command failed with exit status: {}", status)
+            }
+            RunCommandError::IoError(err) => write!(f, "IO error occurred: {}", err),
+        }
+    }
+}
+
+pub trait RunCommandExt {
+    fn run(&mut self) -> Result<(), RunCommandError>;
+}
+
+impl RunCommandExt for Command {
+    fn run(&mut self) -> Result<(), RunCommandError> {
+        let status = self.status().map_err(RunCommandError::IoError)?;
+        if !status.success() {
+            return Err(RunCommandError::CommandFailed(status));
+        }
+        Ok(())
+    }
+}
 
 #[derive(Parser)]
 #[command(version)]
@@ -63,8 +100,10 @@ impl SetupArgs {
         Command::new(env!("CARGO"))
             .arg("new")
             .arg("--bin")
+            .arg("--name")
+            .arg("rustorio-game")
             .arg("rustorio")
-            .status()
+            .run()
             .context("Failed to create new Rustorio project")?;
         let path = parent_path.join("rustorio");
         let path = path.as_path();
@@ -72,7 +111,7 @@ impl SetupArgs {
             .arg("add")
             .arg("rustorio")
             .current_dir(path)
-            .status()
+            .run()
             .context("Failed to add Rustorio as a dependency")?;
         fs::write(path.join("rustorio.toml"), "").context("Failed to create rustorio.toml")?;
         fs::write(path.join("rust-toolchain"), RUST_TOOLCHAIN).context("Failed to create rust-toolchain file")?;
@@ -218,7 +257,7 @@ impl PlayArgs {
             .arg("--bin")
             .arg(&self.save_name)
             .current_dir(rustorio_root)
-            .status()
+            .run()
             .context("Failed to run Rustorio game")?;
         Ok(())
     }

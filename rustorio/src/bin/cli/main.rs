@@ -110,6 +110,7 @@ impl SetupArgs {
         Command::new(env!("CARGO"))
             .arg("add")
             .arg("rustorio")
+            .arg("--no-default-features")
             .current_dir(path)
             .run()
             .context("Failed to add Rustorio as a dependency")?;

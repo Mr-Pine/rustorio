@@ -1,3 +1,5 @@
+#![deny(unsafe_code)]
+
 use rustorio::{
     self, Bundle, ResourceType, Tick,
     gamemodes::{self},

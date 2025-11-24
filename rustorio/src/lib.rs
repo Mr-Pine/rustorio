@@ -1,3 +1,8 @@
+//! [![github]](https://github.com/albertsgarde/rustorio)&ensp;[![crates-io]](https://crates.io/crates/rustorio)
+//!
+//! [github]: https://img.shields.io/badge/github-8da0cb?style=for-the-badge&labelColor=555555&logo=github
+//! [crates-io]: https://img.shields.io/badge/crates.io-fc8d62?style=for-the-badge&labelColor=555555&logo=rust
+
 #![feature(adt_const_params)]
 #![feature(generic_const_exprs)]
 #![allow(incomplete_features)] // silence the “still incomplete” lint

@@ -1,7 +1,7 @@
 use std::{
     fmt::Display,
     fs, io,
-    path::Path,
+    path::{Path, PathBuf},
     process::{Command, ExitStatus},
 };
 
@@ -77,16 +77,16 @@ enum Commands {
 #[derive(Args)]
 pub struct SetupArgs {
     #[clap(default_value = ".")]
-    path: String,
+    path: PathBuf,
     #[clap(long, default_value_t = true)]
     include_tutorial: bool,
 }
 
 impl SetupArgs {
     pub fn run(&self) -> Result<()> {
-        let parent_path = Path::new(&self.path);
+        let parent_path = &self.path;
         if !parent_path.exists() {
-            return Err(anyhow::anyhow!("The specified path '{}' does not exist.", self.path));
+            return Err(anyhow::anyhow!("The specified path '{}' does not exist.", self.path.display()));
         }
 
         if parent_path.join("rustorio").exists() {
@@ -95,7 +95,10 @@ impl SetupArgs {
                 parent_path.display()
             );
         }
-        println!("Setting up Rustorio at '{}'...", self.path);
+
+        let canonical_path = self.path.canonicalize().context("Could not canonicalize specified path")?;
+
+        println!("Setting up Rustorio at '{}'...", canonical_path.display());
         // Run `cargo new --bin self.name`
         Command::new(env!("CARGO"))
             .arg("new")
@@ -103,6 +106,7 @@ impl SetupArgs {
             .arg("--name")
             .arg("rustorio-game")
             .arg("rustorio")
+            .current_dir(&canonical_path)
             .run()
             .context("Failed to create new Rustorio project")?;
         let path = parent_path.join("rustorio");
@@ -190,7 +194,7 @@ impl NewGameArgs {
                     .context("Failed to confirm Rustorio setup")?;
                 if setup_rustorio {
                     let setup_args = SetupArgs {
-                        path: ".".to_string(),
+                        path: PathBuf::from("./"),
                         include_tutorial: false,
                     };
                     setup_args
